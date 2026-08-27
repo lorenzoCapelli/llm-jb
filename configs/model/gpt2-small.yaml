@@ -1,0 +1,8 @@
+# Default dev model: no gating, runs on CPU or 1 GPU, native TransformerLens
+# support. `hf_repo_id` here is TransformerLens's own model_name ("gpt2" is
+# the 124M/small variant in their naming).
+name: gpt2-small
+hf_repo_id: gpt2
+backend: transformer_lens
+device: auto
+dtype: float32

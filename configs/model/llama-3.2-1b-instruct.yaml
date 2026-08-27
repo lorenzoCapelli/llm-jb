@@ -1,0 +1,7 @@
+# Config only — not downloaded by default. Gated on HuggingFace: accept
+# the license on the model page, then set HF_TOKEN in .env before use.
+name: llama-3.2-1b-instruct
+hf_repo_id: meta-llama/Llama-3.2-1B-Instruct
+backend: transformer_lens
+device: auto
+dtype: bfloat16

@@ -125,6 +125,29 @@ access-gated on HuggingFace: accept the terms on each dataset's page once
 with the account behind your `HF_TOKEN`, then results are cached locally
 after the first successful download.
 
+## Models
+
+`configs/model/*.yaml` are typed by `models/config.py::ModelConfig`
+(pydantic-settings: YAML plus env var overrides, e.g.
+`LLM_JB_MODEL_DEVICE=cpu`). `device: auto` resolves to the single GPU
+`CUDA_VISIBLE_DEVICES` exposes to the process, or CPU. `models/backend.py`
+loads a config into a real model, dispatching on `backend`:
+
+- `transformer_lens` (implemented): `HookedTransformer.from_pretrained`.
+  Note this raises a `DeprecationWarning` in transformer_lens 3.8 pointing
+  at an in-progress `TransformerBridge` migration — not adopted yet, since
+  `TransformerBridge` isn't even re-exported from the top-level package in
+  this version and nearly all current activation-patching/SAE tooling
+  still targets `HookedTransformer`. Revisit once it stabilizes.
+- `nnsight` (stub): raises `NotImplementedError`. Not a dependency yet —
+  reserved for models too large for TransformerLens's eager-load approach;
+  `pip install nnsight` and implement it when that's actually needed.
+
+`configs/model/gpt2-small.yaml` is the default dev model (no gating, CPU
+or 1 GPU). `configs/model/llama-3.2-1b-instruct.yaml` is config-only and
+gated (accept the license on the model page, set `HF_TOKEN`) — not
+downloaded unless you actually run it.
+
 ## Structure
 
 ```
