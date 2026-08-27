@@ -66,8 +66,64 @@ cp .env.example .env
 
 `HF_HOME` must **not** stay at the default (`~/.cache/huggingface`): on
 this shared machine it should point explicitly to a path with dedicated
-storage (see `.env.example`). `HF_TOKEN` is only needed for gated models
-(e.g. `llama-3.2-1b-instruct`, not downloaded by default).
+storage (see `.env.example`). `HF_TOKEN` is needed for gated models (e.g.
+`llama-3.2-1b-instruct`, not downloaded by default) and for the
+AdvBench/HarmBench dataset mirrors (see "Data layer" below).
+
+## Data layer
+
+`src/llm_jb/data/` normalizes all three benchmarks into one type,
+`BehaviorTriple` (`data/types.py`): a `harmful_prompt` / `benign_prompt` /
+`jailbroken_prompt`, each a `PromptSpan` carrying the prompt text plus,
+**in characters**, where the core instruction sits inside it. Character
+offsets are used because the three variants have different token counts
+under different tokenizers — token indices are only ever computed on
+demand.
+
+- `data/tokenize.py::tokenize(triple, tokenizer)` applies the tokenizer's
+  chat template (falling back to the raw prompt text for base LMs like
+  gpt2, which have none), tokenizes with `return_offsets_mapping=True`,
+  and converts the character spans into token spans, also recording the
+  index of the prompt's last token (where generation starts).
+- `data/alignment.py` is the single place that resolves an anchor mode
+  (`AnchorMode.LAST_PROMPT_POSITION` (default), `LAST_K_TOKENS`,
+  `MEAN_INSTRUCTION_SPAN`) into token positions and extracts them from a
+  batch of activations via `torch.gather` — never `activations[:, -1, :]`,
+  which silently reads padding for every row shorter than the longest one
+  in a right-padded batch (see `tests/test_alignment.py`).
+- `data/loaders/{jbb,advbench,harmbench}.py` each expose a `load_*()`
+  function returning `list[BehaviorTriple]`, normalizing that benchmark's
+  schema and caching normalized records as local JSON under
+  `data/cache/<source>/` (separate from HF's own cache).
+
+### JailbreakBench and the `jailbreakbench` package
+
+`jailbreakbench` pins `transformers<5.0.0` (we run `5.16.1`) and its
+`litellm` dependency breaks against recent `litellm` releases — so it is
+**not** a runtime dependency of this repo. `scripts/fetch_jbb_artifacts.py`
+downloads JBB-Behaviors and jailbreak artifacts (PAIR, GCG) once, in an
+isolated throwaway venv, and caches them as JSON:
+
+```bash
+python3 -m venv /tmp/jbb-fetch-env
+/tmp/jbb-fetch-env/bin/pip install jailbreakbench==1.0.0 litellm==1.44.24
+/tmp/jbb-fetch-env/bin/python scripts/fetch_jbb_artifacts.py
+```
+
+`data/loaders/jbb.py` only ever reads the resulting JSON — it never
+imports `jailbreakbench`. Note that PAIR paraphrases the original goal, so
+the loader usually can't locate it verbatim inside the adversarial prompt
+and falls back to treating the whole jailbroken prompt as the instruction
+(`metadata["instruction_span_matched"] = False`); GCG appends its suffix
+to the verbatim goal and matches almost every time.
+
+### AdvBench and HarmBench
+
+Loaded via `datasets.load_dataset` from `walledai/AdvBench` and
+`walledai/HarmBench` (`config="standard"` by default). Both are
+access-gated on HuggingFace: accept the terms on each dataset's page once
+with the account behind your `HF_TOKEN`, then results are cached locally
+after the first successful download.
 
 ## Structure
 
