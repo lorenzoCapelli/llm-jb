@@ -1,0 +1,29 @@
+# env
+.env
+.venv/
+env/
+
+# python
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# data / artifacts (never commit weights, dataset cache, activations)
+data/cache/
+data/raw/
+artifacts/
+outputs/
+*.safetensors
+*.zarr/
+
+# editor / os
+.DS_Store
+.vscode/
+.idea/
+
+# notebooks
+.ipynb_checkpoints/

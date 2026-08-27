@@ -1,0 +1,7 @@
+name: llm-jb
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.*
+  - pip=24.2
+  - git=2.45.*

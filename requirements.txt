@@ -1,0 +1,31 @@
+# PyTorch: installed from the explicit CUDA index, not the conda "pytorch"
+# channel. --extra-index-url must be set by hand: see README ("Environment
+# setup") for how to derive the correct CUDA tag from `nvidia-smi` if this
+# pin stops resolving on the target hardware.
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch==2.13.0+cu126
+
+# interpretability
+transformer_lens==3.8.0
+
+# HF stack
+transformers==5.16.1
+accelerate==1.14.0
+datasets==5.0.1
+safetensors==0.8.0
+
+# config
+pydantic==2.13.4
+pydantic-settings==2.15.0
+PyYAML==6.0.3
+python-dotenv==1.2.3
+
+# on-disk activation storage
+zarr==3.1.6
+
+numpy==2.4.6
+
+# dev / test
+pytest==9.1.1
+ruff==0.16.4
+pre-commit==4.6.2

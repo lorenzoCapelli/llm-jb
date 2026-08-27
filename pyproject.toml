@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-jb"
+version = "0.1.0"
+description = "Mechanistic interpretability lab for LLM jailbreak analysis"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = { text = "MIT" }
+authors = [{ name = "Lorenzo", email = "lorenzo99capelli@gmail.com" }]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llm_jb"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
