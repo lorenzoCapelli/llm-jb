@@ -148,6 +148,28 @@ or 1 GPU). `configs/model/llama-3.2-1b-instruct.yaml` is config-only and
 gated (accept the license on the model page, set `HF_TOKEN`) — not
 downloaded unless you actually run it.
 
+## Hooks / activation memory
+
+`hooks/capture.py::capture_residual_stream` hooks only the layers you
+name and reduces each one to the chosen anchor position(s) — via
+`data/alignment.py::extract_anchor_activations` — **inside** the hook
+function, so what's retained is `(batch, d_model)` per hooked layer, never
+the full `(batch, seq, d_model)` that `model.run_with_cache(...)` keeps
+for every hook point. On gpt2-small with a 4-example batch, capturing
+every layer's `resid_post` this way peaks at **~12 MB** of extra VRAM vs
+**~189 MB** for `run_with_cache` on the same batch.
+
+Captured tensors have an explicit shape (`(batch, d_model)`) and dtype,
+enforced by `tests/test_hooks.py`. `placement` (`"gpu"` or `"cpu"`)
+controls where they live right after capture; `hooks/storage.py` then
+persists a finished capture to disk as **safetensors** (preserves dtype
+exactly, including bf16/fp16 — the default) or **zarr** (better suited to
+a chunked/incremental store, but round-trips through numpy, so bf16
+tensors are upcast to float32 on save). `tests/test_hooks.py::TestVramPeak`
+measures real peak VRAM on a small batch against a configurable budget
+(`MAX_CAPTURE_VRAM_DELTA_BYTES`) and is skipped automatically when no GPU
+is visible.
+
 ## Structure
 
 ```
