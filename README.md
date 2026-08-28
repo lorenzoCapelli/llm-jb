@@ -189,6 +189,23 @@ the interface, not to answer a research question. `logit_lens`,
 each explains in its module docstring what it would do and raises
 `NotImplementedError` from `run()` until it's actually implemented.
 
+## Metrics
+
+`metrics/judge.py::Judge` is a refusal/compliance judge interface with
+two interchangeable backends, selected via `JUDGE_REGISTRY` (same
+name -> class pattern as `analyses.REGISTRY`) rather than hardcoded into
+any analysis — no analysis in this repo imports a specific judge class
+directly:
+
+- `substring` (implemented): flags a response as a refusal if it contains
+  any of the standard AdvBench/GCG refusal phrases (case-insensitive),
+  overridable per instance. Cheap, no false negatives on template-y
+  refusals, but misses evasive compliance and refusals that don't use a
+  flagged phrase.
+- `model` (stub): raises `NotImplementedError`; would send the
+  (behavior, response) pair to an LLM with a rubric prompt (e.g.
+  HarmBench/StrongREJECT-style) and parse a verdict from the reply.
+
 ## Structure
 
 ```
