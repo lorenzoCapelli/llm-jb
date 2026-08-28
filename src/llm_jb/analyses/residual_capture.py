@@ -6,20 +6,22 @@ to answer a research question.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
+from pydantic_settings import SettingsConfigDict
 from transformer_lens import HookedTransformer
 
 from llm_jb.analyses.base import Analysis, AnalysisResult
 from llm_jb.analyses.batch import Batch
+from llm_jb.config import YamlSettings
 from llm_jb.data.types import AnchorMode
 from llm_jb.hooks.capture import capture_residual_stream
 from llm_jb.hooks.storage import ActivationPlacement
 
 
-@dataclass(frozen=True)
-class ResidualCaptureConfig:
+class ResidualCaptureConfig(YamlSettings):
+    model_config = SettingsConfigDict(extra="forbid", env_prefix="LLM_JB_RESIDUAL_CAPTURE_")
+
     layers: list[int] | None = None  # None = every layer
     anchor_mode: AnchorMode = AnchorMode.LAST_PROMPT_POSITION
     k: int = 1

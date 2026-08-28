@@ -1,0 +1,5 @@
+# Default dataset for scripts/run_analysis.py: no network, no gating, no
+# JBB fetch step needed. Plumbing content only — see
+# data/loaders/builtin_smoke.py.
+source: builtin_smoke
+variants: [harmful, benign]

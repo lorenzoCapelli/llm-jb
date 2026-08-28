@@ -1,0 +1,5 @@
+# Access-gated on HuggingFace (walledai/HarmBench) — accept the terms on
+# the dataset page and set HF_TOKEN in .env before use.
+source: harmbench
+variants: [harmful]
+harmbench_config: standard

@@ -1,0 +1,28 @@
+# 4 dummy runs proving scripts/sweep.py distributes across free GPUs
+# correctly — not a real research sweep (same analysis/model/dataset each
+# time, only the output path differs so they don't clobber each other).
+runs:
+  - name: run_0
+    args:
+      analysis: residual_capture
+      model: gpt2-small
+      dataset: smoke
+      output: artifacts/sweep_example/run_0.safetensors
+  - name: run_1
+    args:
+      analysis: residual_capture
+      model: gpt2-small
+      dataset: smoke
+      output: artifacts/sweep_example/run_1.safetensors
+  - name: run_2
+    args:
+      analysis: residual_capture
+      model: gpt2-small
+      dataset: smoke
+      output: artifacts/sweep_example/run_2.safetensors
+  - name: run_3
+    args:
+      analysis: residual_capture
+      model: gpt2-small
+      dataset: smoke
+      output: artifacts/sweep_example/run_3.safetensors

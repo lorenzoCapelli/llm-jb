@@ -1,0 +1,4 @@
+# Access-gated on HuggingFace (walledai/AdvBench) — accept the terms on
+# the dataset page and set HF_TOKEN in .env before use.
+source: advbench
+variants: [harmful]

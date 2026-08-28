@@ -1,0 +1,4 @@
+layers: null # null = every layer
+anchor_mode: last_prompt_position
+k: 1
+placement: cpu

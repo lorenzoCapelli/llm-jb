@@ -206,6 +206,44 @@ directly:
   (behavior, response) pair to an LLM with a rubric prompt (e.g.
   HarmBench/StrongREJECT-style) and parse a verdict from the reply.
 
+## Scripts
+
+### `run_analysis.py`
+
+Runs one analysis end to end and saves the result as a safetensors
+artifact. Args are `key=value` overrides, each resolved against
+`configs/<key>/<value>.yaml`:
+
+```bash
+python scripts/run_analysis.py analysis=residual_capture model=gpt2-small
+# dataset defaults to configs/dataset/smoke.yaml (no network/gating needed);
+# output defaults to artifacts/<analysis>_<model>.safetensors
+python scripts/run_analysis.py analysis=residual_capture model=gpt2-small \
+    dataset=jbb output=artifacts/jbb_run.safetensors
+```
+
+On this machine the default smoke run (`model=gpt2-small`, no GPU forced)
+picks up the visible GPU automatically (`device: auto`); forced onto CPU
+(`CUDA_VISIBLE_DEVICES=`) it completes in ~13s, well under the 2-minute
+budget.
+
+### `sweep.py`
+
+Distributes a list of runs across free GPUs — one `run_analysis.py`
+subprocess per GPU via `CUDA_VISIBLE_DEVICES`, a simple queue, one log
+file per run under `logs/sweep/`, clean handling of failures (a failed
+run doesn't stop the others; a nonzero sweep exit code reflects any
+failure) and Ctrl+C (running subprocesses get `SIGTERM`, then `SIGKILL`
+after a grace period).
+
+```bash
+python scripts/sweep.py                       # configs/sweep_example/sweep.yaml (4 dummy runs)
+python scripts/sweep.py path/to/my_sweep.yaml
+```
+
+On this machine's 4 A100s, the 4 dummy runs land one per GPU and finish
+in ~21-23s each, fully in parallel.
+
 ## Structure
 
 ```

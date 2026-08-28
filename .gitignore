@@ -17,6 +17,7 @@ data/cache/
 data/raw/
 artifacts/
 outputs/
+logs/
 *.safetensors
 *.zarr/
 

@@ -1,0 +1,6 @@
+# Requires the local JBB cache — run scripts/fetch_jbb_artifacts.py first
+# (see its docstring: isolated venv, not the llm-jb env).
+source: jbb
+variants: [harmful, benign, jailbroken]
+attack_method: PAIR
+attack_model: vicuna-13b-v1.5
