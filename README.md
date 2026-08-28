@@ -170,6 +170,25 @@ measures real peak VRAM on a small batch against a configurable budget
 (`MAX_CAPTURE_VRAM_DELTA_BYTES`) and is skipped automatically when no GPU
 is visible.
 
+## Analyses
+
+`analyses/base.py::Analysis` is the one interface every analysis
+implements: `run(model, batch) -> AnalysisResult`. `analyses/batch.py`
+builds the `Batch` every analysis consumes — it flattens the requested
+variants (`"harmful"`, `"benign"`, `"jailbroken"`) of a list of
+`BehaviorTriple`s into padded rows, tokenizing each with `data/tokenize.py`
+so `batch.spans[i]` still carries row `i`'s real (pre-padding) length and
+instruction span. `analyses.REGISTRY` maps a config string (e.g.
+`analysis=residual_capture`) to the class, so `scripts/run_analysis.py`
+never hardcodes which analysis runs.
+
+Only `residual_capture` (`analyses/residual_capture.py`) is implemented —
+it wraps `hooks/capture.py::capture_residual_stream` and exists to prove
+the interface, not to answer a research question. `logit_lens`,
+`activation_patching`, `linear_probe`, and `sae` are documented stubs:
+each explains in its module docstring what it would do and raises
+`NotImplementedError` from `run()` until it's actually implemented.
+
 ## Structure
 
 ```
