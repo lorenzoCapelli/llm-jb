@@ -2,6 +2,7 @@ import pytest
 from transformer_lens import HookedTransformer
 
 from llm_jb.analyses import REGISTRY, Analysis, build_batch
+from llm_jb.analyses.logit_lens import LogitLensAnalysis, LogitLensConfig
 from llm_jb.analyses.residual_capture import ResidualCaptureAnalysis, ResidualCaptureConfig
 from llm_jb.data.types import AnchorMode, BehaviorTriple, PromptSpan
 
@@ -101,8 +102,36 @@ class TestResidualCaptureAnalysis:
         assert len(result.data) == gpt2_model.cfg.n_layers
 
 
+class TestLogitLensAnalysis:
+    def test_run_returns_per_layer_vocab_logits(self, gpt2_model):
+        triples = [_triple("a", "harmful text", benign="benign text")]
+        batch = build_batch(triples, gpt2_model.tokenizer, variants=("harmful", "benign"))
+
+        result = LogitLensAnalysis(LogitLensConfig(layers=[0, 5, 11])).run(gpt2_model, batch)
+
+        assert result.analysis_name == "logit_lens"
+        assert result.variants == ["harmful", "benign"]
+        assert set(result.data.keys()) == {"layer_0", "layer_5", "layer_11"}
+        for tensor in result.data.values():
+            assert tensor.shape == (2, gpt2_model.cfg.d_vocab)
+        assert result.metadata["layers"] == [0, 5, 11]
+
+    def test_last_layer_lens_matches_model_logits(self, gpt2_model):
+        import torch
+
+        triples = [_triple("a", "a short harmless prompt")]
+        batch = build_batch(triples, gpt2_model.tokenizer)
+        last = gpt2_model.cfg.n_layers - 1
+
+        result = LogitLensAnalysis(LogitLensConfig(layers=[last])).run(gpt2_model, batch)
+
+        pos = batch.spans[0].last_prompt_position
+        ref = gpt2_model(batch.tokens, return_type="logits")[0, pos].float().cpu()
+        torch.testing.assert_close(result.data[f"layer_{last}"][0], ref, atol=1e-3, rtol=1e-3)
+
+
 class TestStubsRaiseNotImplemented:
-    @pytest.mark.parametrize("name", ["logit_lens", "activation_patching", "linear_probe", "sae"])
+    @pytest.mark.parametrize("name", ["activation_patching", "linear_probe", "sae"])
     def test_stub_raises(self, name, gpt2_model):
         triples = [_triple("a", "x")]
         batch = build_batch(triples, gpt2_model.tokenizer)

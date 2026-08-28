@@ -2,7 +2,7 @@ from llm_jb.analyses.activation_patching import ActivationPatchingAnalysis
 from llm_jb.analyses.base import Analysis, AnalysisResult
 from llm_jb.analyses.batch import Batch, build_batch
 from llm_jb.analyses.linear_probe import LinearProbeAnalysis
-from llm_jb.analyses.logit_lens import LogitLensAnalysis
+from llm_jb.analyses.logit_lens import LogitLensAnalysis, LogitLensConfig
 from llm_jb.analyses.residual_capture import ResidualCaptureAnalysis, ResidualCaptureConfig
 from llm_jb.analyses.sae import SaeAnalysis
 
@@ -25,6 +25,7 @@ __all__ = [
     "ResidualCaptureAnalysis",
     "ResidualCaptureConfig",
     "LogitLensAnalysis",
+    "LogitLensConfig",
     "ActivationPatchingAnalysis",
     "LinearProbeAnalysis",
     "SaeAnalysis",

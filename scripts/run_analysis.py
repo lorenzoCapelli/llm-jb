@@ -24,6 +24,7 @@ import time  # noqa: E402
 from pathlib import Path  # noqa: E402
 
 from llm_jb.analyses import REGISTRY, build_batch  # noqa: E402
+from llm_jb.analyses.logit_lens import LogitLensConfig  # noqa: E402
 from llm_jb.analyses.residual_capture import ResidualCaptureConfig  # noqa: E402
 from llm_jb.data.dataset_config import DatasetConfig, load_dataset_triples  # noqa: E402
 from llm_jb.hooks.storage import save_activations_safetensors  # noqa: E402
@@ -34,11 +35,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 CONFIGS_DIR = REPO_ROOT / "configs"
 DEFAULT_ARTIFACTS_DIR = REPO_ROOT / "artifacts"
 
-# Analyses with a typed, YAML-loadable config. Stubs (logit_lens, ...)
-# aren't listed here: they take no config and raise NotImplementedError
-# from run() regardless.
+# Analyses with a typed, YAML-loadable config. The remaining stubs
+# (activation_patching, ...) aren't listed here: they take no config and
+# raise NotImplementedError from run() regardless.
 ANALYSIS_CONFIG_TYPES = {
     "residual_capture": ResidualCaptureConfig,
+    "logit_lens": LogitLensConfig,
 }
 
 

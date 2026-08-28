@@ -10,6 +10,8 @@ The analysis method is not fixed: the repo exposes a common interface
 activation patching, linear probing, SAE, ...), rather than implementing a
 single paper.
 
+**Walkthrough:** [`notebooks/00_walkthrough.ipynb`](notebooks/00_walkthrough.ipynb) is an executed, end-to-end tour of the public API — model loading, prompt wrapping + instruction-slice alignment, refusal/compliance judging, selective residual capture, and a logit lens — that runs on one A100 in under 5 minutes. Defaults to the gated `llama-3.2-1b-instruct` (needs `HF_TOKEN` + the accepted Llama license); set `WALKTHROUGH_MODEL=gpt2-small` for the ungated base-LM variant. Needs the local JBB cache from Section 2 on (see `scripts/fetch_jbb_artifacts.py`).
+
 ## Environment setup
 
 Requires conda (no `uv`) and Python 3.11. GPUs are optional for
