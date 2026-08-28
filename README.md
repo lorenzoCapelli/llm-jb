@@ -244,6 +244,26 @@ python scripts/sweep.py path/to/my_sweep.yaml
 On this machine's 4 A100s, the 4 dummy runs land one per GPU and finish
 in ~21-23s each, fully in parallel.
 
+## Testing
+
+```bash
+pytest
+```
+
+GPU-only tests (`tests/test_hooks.py::TestVramPeak`) skip automatically
+when no GPU is visible; everything else runs on CPU. Real, cached models
+(`gpt2`) and real JBB cache data are used where practical instead of
+mocks — see `tests/test_run_analysis.py` and `tests/test_sweep.py` for
+genuine subprocess end-to-end runs of the two scripts above.
+
+## Development
+
+```bash
+pre-commit install   # runs ruff (lint + format) on every commit
+ruff check .
+ruff format .
+```
+
 ## Structure
 
 ```
@@ -260,8 +280,8 @@ tests/
 notebooks/    # exploration only, no application logic
 ```
 
-_("Usage" and "Activation memory notes" sections land with the next steps
-of the plan, see `PLAN.md`)_
+See `PLAN.md` for the step-by-step build log and the design decisions
+made along the way.
 
 ## GPUs: single machine, 4x A100
 
