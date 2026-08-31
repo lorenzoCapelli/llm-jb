@@ -1,0 +1,13 @@
+# Config only — not downloaded by default. Gated on HuggingFace: accept
+# the license on the model page (meta-llama/Llama-2-7b-chat-hf), then set
+# HF_TOKEN in .env before use.
+#
+# ~6.7B params; bf16 weights ~13.5 GB, fits comfortably on one A100 (40 or
+# 80 GB) via HookedTransformer's eager load. Expect forward passes ~5x
+# slower than llama-3.2-1b, and layer-sweep analyses (activation patching,
+# per-layer logit lens) ~10x, since it has 32 layers vs 16.
+name: llama-2-7b-chat
+hf_repo_id: meta-llama/Llama-2-7b-chat-hf
+backend: transformer_lens
+device: auto
+dtype: bfloat16

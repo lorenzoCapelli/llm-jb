@@ -24,7 +24,13 @@ from pathlib import Path
 CACHE_DIR = Path(__file__).resolve().parent.parent / "data" / "cache" / "jbb"
 
 ARTIFACT_METHODS = ["PAIR", "GCG"]
-ARTIFACT_MODEL = "vicuna-13b-v1.5"
+# JBB's valid target-model names (jailbreakbench.config.MODEL_NAMES) are
+# 'vicuna-13b-v1.5', 'llama-2-7b-chat-hf', 'gpt-3.5-turbo-1106',
+# 'gpt-4-0125-preview' — note the '-hf' suffix on the Llama entry, which
+# does not match the HF repo id's own short form. The loader keys its
+# cache path on this exact name, so fetching several here is enough to
+# switch `attack_model` later.
+ARTIFACT_MODELS = ["llama-2-7b-chat-hf"]
 
 
 def _dump(path: Path, obj: object) -> None:
@@ -45,10 +51,11 @@ def fetch_behaviors() -> None:
 def fetch_artifacts() -> None:
     import jailbreakbench as jbb
 
-    for method in ARTIFACT_METHODS:
-        artifact = jbb.read_artifact(method=method, model_name=ARTIFACT_MODEL)
-        records = [j.model_dump() for j in artifact.jailbreaks]
-        _dump(CACHE_DIR / f"artifact_{method}_{ARTIFACT_MODEL}.json", records)
+    for model_name in ARTIFACT_MODELS:
+        for method in ARTIFACT_METHODS:
+            artifact = jbb.read_artifact(method=method, model_name=model_name)
+            records = [j.model_dump() for j in artifact.jailbreaks]
+            _dump(CACHE_DIR / f"artifact_{method}_{model_name}.json", records)
 
 
 def main() -> None:

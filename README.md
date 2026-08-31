@@ -10,7 +10,7 @@ The analysis method is not fixed: the repo exposes a common interface
 activation patching, linear probing, SAE, ...), rather than implementing a
 single paper.
 
-**Walkthrough:** [`notebooks/00_walkthrough.ipynb`](notebooks/00_walkthrough.ipynb) is an executed, end-to-end tour of the public API — model loading, prompt wrapping + instruction-slice alignment, refusal/compliance judging, selective residual capture, and a logit lens — that runs on one A100 in under 5 minutes. Defaults to the gated `llama-3.2-1b-instruct` (needs `HF_TOKEN` + the accepted Llama license); set `WALKTHROUGH_MODEL=gpt2-small` for the ungated base-LM variant. Needs the local JBB cache from Section 2 on (see `scripts/fetch_jbb_artifacts.py`).
+**Walkthrough:** [`notebooks/00_walkthrough.ipynb`](notebooks/00_walkthrough.ipynb) is an executed, end-to-end tour of the public API — model loading, prompt wrapping + instruction-slice alignment, refusal/compliance judging, selective residual capture, and a logit lens — that runs on one A100 in under 5 minutes (~2 min for the committed run). Model, attack model, and attack method are all overridable via `WALKTHROUGH_MODEL`/`WALKTHROUGH_ATTACK_MODEL`/`WALKTHROUGH_ATTACK_METHOD`; the committed outputs are for `llama-2-7b-chat` against its own matched JBB/GCG artifacts (both gated — `HF_TOKEN` + accepted licenses). Set `WALKTHROUGH_MODEL=gpt2-small` for the ungated base-LM variant. Needs the local JBB cache from Section 2 on (see `scripts/fetch_jbb_artifacts.py`).
 
 ## Environment setup
 
@@ -104,7 +104,11 @@ demand.
 `litellm` dependency breaks against recent `litellm` releases — so it is
 **not** a runtime dependency of this repo. `scripts/fetch_jbb_artifacts.py`
 downloads JBB-Behaviors and jailbreak artifacts (PAIR, GCG) once, in an
-isolated throwaway venv, and caches them as JSON:
+isolated throwaway venv, and caches them as JSON. `ARTIFACT_MODELS` in
+that script controls which target model's artifacts get fetched (JBB's
+own model name — note `llama-2-7b-chat-hf`, not the HF repo id's short
+form); `configs/dataset/jbb.yaml` reads `vicuna-13b-v1.5`'s,
+`configs/dataset/jbb-llama2.yaml` reads `llama-2-7b-chat-hf`'s:
 
 ```bash
 python3 -m venv /tmp/jbb-fetch-env
@@ -146,9 +150,13 @@ loads a config into a real model, dispatching on `backend`:
   `pip install nnsight` and implement it when that's actually needed.
 
 `configs/model/gpt2-small.yaml` is the default dev model (no gating, CPU
-or 1 GPU). `configs/model/llama-3.2-1b-instruct.yaml` is config-only and
-gated (accept the license on the model page, set `HF_TOKEN`) — not
-downloaded unless you actually run it.
+or 1 GPU). `configs/model/llama-3.2-1b-instruct.yaml` and
+`configs/model/llama-2-7b-chat.yaml` are both config-only and gated
+(separate licenses — accept each on its own model page, set `HF_TOKEN`) —
+not downloaded unless you actually run one. The 7B variant is ~13.5 GB in
+bf16, comfortably one A100, but forward passes are noticeably slower and
+per-layer sweeps (activation patching, logit lens) roughly track its 32
+layers vs. the 1B model's 16.
 
 ## Hooks / activation memory
 

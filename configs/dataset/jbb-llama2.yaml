@@ -1,0 +1,11 @@
+# Same as jbb.yaml but pulls the jailbreak artifacts crafted against
+# llama-2-7b-chat-hf instead of vicuna-13b-v1.5. Requires the local JBB
+# cache to include artifact_<method>_llama-2-7b-chat-hf.json — run the
+# updated scripts/fetch_jbb_artifacts.py first (see its docstring:
+# isolated venv, not the llm-jb env). Note the '-hf' suffix: that's JBB's
+# own target-model name (jailbreakbench.config.MODEL_NAMES), not the HF
+# repo id's short form.
+source: jbb
+variants: [harmful, benign, jailbroken]
+attack_method: PAIR
+attack_model: llama-2-7b-chat-hf
