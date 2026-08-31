@@ -10,7 +10,7 @@ The analysis method is not fixed: the repo exposes a common interface
 activation patching, linear probing, SAE, ...), rather than implementing a
 single paper.
 
-**Walkthrough:** [`notebooks/00_walkthrough.ipynb`](notebooks/00_walkthrough.ipynb) is an executed, end-to-end tour of the public API — model loading, prompt wrapping + instruction-slice alignment, refusal/compliance judging, selective residual capture, and a logit lens — that runs on one A100 in under 5 minutes (~2 min for the committed run). Model, attack model, and attack method are all overridable via `WALKTHROUGH_MODEL`/`WALKTHROUGH_ATTACK_MODEL`/`WALKTHROUGH_ATTACK_METHOD`; the committed outputs are for `llama-2-7b-chat` against its own matched JBB/GCG artifacts (both gated — `HF_TOKEN` + accepted licenses). Set `WALKTHROUGH_MODEL=gpt2-small` for the ungated base-LM variant. Needs the local JBB cache from Section 2 on (see `scripts/fetch_jbb_artifacts.py`).
+**Walkthrough:** [`notebooks/00_walkthrough.ipynb`](notebooks/00_walkthrough.ipynb) is an executed, end-to-end tour of the public API — model loading, prompt wrapping + instruction-slice alignment, refusal/compliance judging, selective residual capture, and a logit lens — that runs on one A100 in under 5 minutes (~2 min for the committed run). Model, attack model, and attack method are all overridable via `WALKTHROUGH_MODEL`/`WALKTHROUGH_ATTACK_MODEL`/`WALKTHROUGH_ATTACK_METHOD` (both gated — `HF_TOKEN` + accepted licenses). The committed run is `llama-2-7b-chat` against `vicuna-13b-v1.5`'s JBB/GCG artifacts: llama-2-7b-chat-hf's *own* artifacts barely work at all (0/100 PAIR, 3/100 GCG per JBB's label), and even vicuna's much more successful ones (69-80/100 against vicuna) mostly don't transfer — only 3/149 actually flip llama-2-7b-chat under this repo's own decoding + judge (`scripts/check_transfer.py`, see the notebook's intro cell for the full picture). Set `WALKTHROUGH_MODEL=gpt2-small` for the ungated base-LM variant. Needs the local JBB cache from Section 2 on (see `scripts/fetch_jbb_artifacts.py`).
 
 ## Environment setup
 
@@ -253,6 +253,19 @@ python scripts/sweep.py path/to/my_sweep.yaml
 
 On this machine's 4 A100s, the 4 dummy runs land one per GPU and finish
 in ~21-23s each, fully in parallel.
+
+### `check_transfer.py`
+
+JBB's `jailbroken_success` metadata only ever means "worked against the model that
+artifact was optimized for" — not against whichever model you're actually analyzing.
+This script builds the ground truth that matters instead: it takes every jailbreak JBB
+recorded as successful against one model and actually generates + judges it (via
+`models.generate.generate_greedy` + `metrics.judge.SubstringRefusalJudge`, no new
+package code) against a different one, saving per-example verdicts as JSON.
+
+```bash
+python scripts/check_transfer.py model=llama-2-7b-chat attack_model=vicuna-13b-v1.5
+```
 
 ## Testing
 
